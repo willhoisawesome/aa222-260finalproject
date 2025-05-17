@@ -27,7 +27,7 @@ function [output, output2] = AA_260_Engine_Model(alt, Mach)
     given.TSFC0 = 0.40; % (!!!) static, sea-level installed thrust at MCT (maximum continuous thrust [normal operation])
     given.n = 0.8; % n = 0.8 is a good approximation for PW4056 (A330, B777, HBPR)
     given.ne = 2; % number of engines
-    given.T0 = 20305; % PW1919G max continuous sea level static thrust, lbf
+    given.T0 = 26345; % PW1127G-JM max continuous sea level static thrust, lbf
     given.N1 = 0.8; % (!!!) spool speed (in percent, 0-100%) / 100
     given.m = 0.7; % m = 0.7 for h < 36151 ft; m = 1 for h >= 36151 ft
     given.a1 = -8.5e-4; % (!!!) taken from slide 20

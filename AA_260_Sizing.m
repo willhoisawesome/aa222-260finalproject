@@ -115,6 +115,8 @@ for ii = 1:n3 % iterate over wing loadings
                 end
             
                 w0(jj, kk, ii, mm) = sizing.w0_calc(end); % intial weight, lbs
+                w_fuel(jj, kk, ii, mm) = sizing.w_fuel(end); % fuel weight, lbs
+                fuel_per_passenger(jj, kk, ii, mm) = w_fuel(jj, kk, ii, mm) / given.passenger_count(mm); % lbs / passenger
             end
         end
     end
