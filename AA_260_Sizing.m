@@ -34,8 +34,8 @@ given.passenger_count = 100:10:200; % passenger count range
 
 % Uncomment to check against actual A320neo (ChatGPT gives 1.1e5 lbs)
 % given.M_cruise = 0.8;
-% given.alt = 11000;
-% given.W_S = 165;
+% given.alt = 11000; % m
+% given.W_S = 165; % lb/ft^2
 % given.passenger_count = 165;
 
 n1 = length(given.M_cruise); % size of Mach array

@@ -1,22 +1,18 @@
 %% AA 260 Project
 % Written by Shane Tokishi, Will Ho, Valeria Cartagena
-% Last updated: 5/14/25
+% Last updated: 5/17/25
 
 %% To-Do
-% - redo weight fractions in AA_260_sizing (done?)
 
 % - think about cryogenic fuel penalty because Table 6.2 is based on statistical
 % data, which does not include H2 aircraft. If we were to just add a tank
 % penalty we are double counting a JetA fuel system and a H2 fuel system
 
-% - UPDATE MASS FLOW RATE TO ACCOUNT FOR HYDROGEN ENERGY PER UNIT MASS
-
 %% TSFC Estimates
 
 % Reference AA141-Propulsion Lecture 11 from Alonso
 % ~ Slide 19
-% FILL IN WITH ASSUMPTIONS
-% Reference aircraft (for now) is the A320neo
+% Reference aircraft is the A320neo
 
 %%
 function [output, output2] = AA_260_Engine_Model(alt, Mach)
@@ -36,6 +32,8 @@ function [output, output2] = AA_260_Engine_Model(alt, Mach)
     given.m = 0.7; % m = 0.7 for h < 36151 ft; m = 1 for h >= 36151 ft
     given.a1 = -8.5e-4; % (!!!) taken from slide 20
     given.a2 = 5.5e-7; % (!!!) taken from slide 20
+    given.LHV_H2 = 51500; % lower heating value of H2
+    given.LHV_JetA = 18500; % lower heating value of Jet A
     
     % Determine pressure, temperature, and density ratios fror a given altitude
     atmosphere = Isentropic_Atmosphere(given.alt); % pressure, temperature, density values using isentropic atmosphere model
@@ -56,7 +54,7 @@ function [output, output2] = AA_260_Engine_Model(alt, Mach)
     end
     
     output.T = T; % assign to output structure
-    output.TSFC = TSFC; % assign to output stucture
+    output.TSFC = TSFC * given.LHV_JetA / given.LHV_H2; % assign to output stucture (converted to H2 for a given thrust)
     output.mdot_f = TSFC .* T; % fuel consumption, lbm/hr
     output.v = v; % assign to output structure
     output2 = atmosphere; % assign to output stucture
