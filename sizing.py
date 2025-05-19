@@ -1,8 +1,10 @@
 # sizing.py
 
+# contains aircraft sizing model, engine model, and atmosphere model 
+
 import numpy as np
 
-def aa_260_sizing(turbofan, atmosphere, M_cruise_range, alt_range, W_S_range, passenger_count_range, AR=10.5, range_nm=2000):
+def aa_260_sizing(turbofan, atmosphere, M_cruise_range, alt_range, W_S_range, passenger_count_range, range_nm, AR=10.5):
     # Constants
     a, b = -0.90, 1.36
     C1, C2, C3, C4, C5 = -0.10, 0.08, 0.05, -0.05, 0.20
