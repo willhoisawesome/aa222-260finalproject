@@ -15,10 +15,10 @@ from constraints import (
 
 # Design variable bounds: [Mach, Altitude (m), Wing Loading (lb/ft²), Passengers]
 bounds = [
-    (0.6, 0.9),        # Mach
-    (9000, 12000),     # Altitude
-    (50, 200),         # Wing Loading
-    (100, 200)         # Passengers
+    (0.5, 0.9),        # Mach
+    (7000, 15000),     # Altitude
+    (10, 300),         # Wing Loading
+    (100, 400)         # Passengers
 ]
 
 iteration_counter = {'count': 0}
@@ -39,17 +39,18 @@ def objective(x):
             turbofan, atmosphere,
             np.array([Mach]), np.array([Alt]),
             np.array([W_S]), np.array([pax]),
-            range_nm=2000
+            range_nm=1800
         )
         fuel = fuel_pp[0, 0, 0, 0]
         w0_val = w0[0, 0, 0, 0]
+        fuel_weight_kg = fuel * 0.4536  # lb to kg
 
     except Exception as e:
         print(f"[Sizing Failure] Mach={Mach:.3f}, Alt={Alt:.1f}, W/S={W_S:.1f}, Pax={pax} → {e}")
         return 1e9
 
     penalty = 0
-    rho = 1e8
+    rho = 10^1000
 
     # --- Stall Constraint ---
     W_S_stall = stall_constraint()
@@ -90,6 +91,36 @@ def objective(x):
         penalty += (rho * delta)**2
         print(f"[Violation] Takeoff: T/W_max={T_W_max:.3f} < {T_W_takeoff_req:.3f}")
 
+    # --- Wingspan Constraint ---
+    S_ft2 = w0_val / W_S  # Wing area in ft²
+    b_ft = np.sqrt(AR * S_ft2)  # Wingspan in ft
+    b_m = b_ft * 0.3048  # Wingspan in meters
+
+    max_wingspan_m = 36.0
+    if b_m > max_wingspan_m:
+        delta = b_m - max_wingspan_m
+        penalty += (rho * delta)**2
+        print(f"[Violation] Wingspan: b = {b_m:.2f} m > {max_wingspan_m:.2f} m")
+
+    # --- Fuselage Length Constraint ---
+    seat_pitch = 0.76  # m
+    seats_abreast = 6
+    L_galley = 5       # m
+    L_cabin = pax * seat_pitch / seats_abreast + L_galley
+
+#    R_tank = 2.0       # m
+#    rho_LH2 = 71       # kg/m³
+#    eta_V = 0.927
+#    eta_f = 0.85
+#    V_tank = fuel_weight_kg / (rho_LH2 * eta_V * eta_f)
+#    L_tank = V_tank / (np.pi * R_tank**2)
+    L_tank = 0       # m
+
+    L_total = L_cabin + L_tank + 4 + 4  # add 4m nose and 4m tail
+    if L_total > 44.5:
+        penalty += (rho * (L_total - 44.5))**2
+        print(f"[Violation] Fuselage Length: {L_total:.2f} m > 44.5 m")
+
     if penalty > 0:
         print(f"[Penalty] Mach={Mach:.3f}, Alt={Alt:.1f}, W/S={W_S:.1f}, Pax={pax}, Penalty={penalty:.1e}")
 
@@ -106,7 +137,7 @@ if __name__ == "__main__":
         objective,
         bounds,
         strategy='best1bin',
-        maxiter=1000,
+        maxiter=5000,
         callback=callback,
         polish=True
     )
@@ -134,11 +165,40 @@ if __name__ == "__main__":
     print(f"Altitude [m]  : {Alt:.1f}")
     print(f"Wing Loading  : {W_S:.1f} lb/ft²")
     print(f"Passengers    : {pax}")
-    print(f"Fuel/Passenger: {result.fun:.2f} lb")
+    print(f"Fuel/Passenger: {fuel_total/pax:.2f} lb")
     print(f"MTOW          : {w0_val:.1f} lb")
     print(f"Fuel Weight   : {fuel_total:.1f} lb")
     print(f"T/W (Cruise)  : {T_W_cruise:.3f}")
     print(f"T/W (Takeoff) : {T_W_takeoff:.3f}")
+
+    # Calculate wingspan
+    S_ft2 = w0_val / W_S  # Wing area in ft²
+    b_ft = np.sqrt(AR * S_ft2)  # Wingspan in ft
+    b_m = b_ft * 0.3048  # Convert to meters
+
+    print(f"Wing Area     : {S_ft2:.1f} ft²")
+    print(f"Wingspan      : {b_ft:.1f} ft ({b_m:.2f} m)")
+
+    # Fuselage Length Calculation
+    seat_pitch = 0.76  # m
+    seats_abreast = 6
+    L_galley = 5       # m
+    L_cabin = pax * seat_pitch / seats_abreast + L_galley
+
+    R_tank = 2.0       # m
+    rho_LH2 = 71       # kg/m³
+    eta_V = 0.927
+    eta_f = 0.85
+    fuel_kg = fuel_total * 0.4536  # Convert lb to kg
+    V_tank = fuel_kg / (rho_LH2 * eta_V * eta_f)
+    # L_tank = V_tank / (np.pi * R_tank**2)
+    L_tank = 0
+
+    L_total = L_cabin + L_tank + 4 + 4  # add nose + tail
+
+    print(f"Cabin Length   : {L_cabin:.2f} m")
+    print(f"Tank Length    : {L_tank:.2f} m")
+    print(f"Fuselage Length: {L_total:.2f} m")
 
     plot_constraints(
         W_S_design=W_S,

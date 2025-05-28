@@ -121,8 +121,8 @@ def plot_constraints(W_S_design, T_W_design, T_W_takeoff_point, CD0, AR, e, V_cr
     plt.axvline(W_S_land_val, color='saddlebrown', label="Landing Constraint")
 
     # Design point
-    plt.plot(W_S_design, T_W_design, 'ro', label='A320neo Cruise Design Point')
-    plt.plot(W_S_design, T_W_takeoff_point, 'ro', label='A320neo Takeoff Design Point')
+    plt.plot(W_S_design, T_W_design, 'ro', label='Cruise Design Point')
+    plt.plot(W_S_design, T_W_takeoff_point, 'ro', label='Takeoff Design Point')
 
     # Formatting
     plt.xlabel('Wing Loading W/S [lb/ft²]')
