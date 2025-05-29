@@ -25,18 +25,18 @@ given.C5 = 0.20;
 
 given.lambda = 27; % A320neo leading edge sweep angle
 given.AR = 10.5; % A320neo aspect ratio
-given.range = 2000; % nautical miles
+given.range = 1500; % nautical miles
 
-given.M_cruise = 0.6:0.1:0.9; % A320neo cruise mach range
-given.alt = 9000:1000:12000; % cruise altitude, m
-given.W_S = 50:10:200; % wing loading range, lb/ft^2
-given.passenger_count = 100:10:200; % passenger count range
+% given.M_cruise = 0.6:0.1:0.9; % A320neo cruise mach range
+% given.alt = 9000:1000:12000; % cruise altitude, m
+% given.W_S = 50:10:200; % wing loading range, lb/ft^2
+% given.passenger_count = 100:10:200; % passenger count range
 
 % Uncomment to check against actual A320neo (ChatGPT gives 1.1e5 lbs)
-% given.M_cruise = 0.8;
-% given.alt = 11000; % m
-% given.W_S = 165; % lb/ft^2
-% given.passenger_count = 165;
+given.M_cruise = 0.8;
+given.alt = 11000; % m
+given.W_S = 165; % lb/ft^2
+given.passenger_count = 165;
 
 n1 = length(given.M_cruise); % size of Mach array
 n2 = length(given.alt); % size of altitude array
@@ -108,10 +108,30 @@ for ii = 1:n3 % iterate over wing loadings
                     
                     sizing.w_empty(sizing.count) = ((given.coef1(jj, kk, ii) * sizing.w0_guess(1)^(-0.1) + given.coef2) * sizing.w0_guess(1)); % ref. example on pg. 875
                     sizing.w_fuel(sizing.count) = sizing.wf_w0 * sizing.w0_guess(sizing.count);
-                    sizing.w0_calc(sizing.count) = sizing.w_fuel(sizing.count) + sizing.w_crew_payload + sizing.w_empty(sizing.count);
+                    
+                    % Note the multiplier on w_fuel to account for cryogenic tank penalty
+                    % From Raymer: W_fuel_system = 805 kg (1776.788 lbs)
+                    % A320neo fuel weight = 19,100 kg (from Jayant)
+                    % This results in 4.2% of fuel weight as system weight for Jet A
+                    
+                    % Jayant recommends GI = 0.2, 0.35, 0.5 (GI = fuel / (fuel + system))
+                    % These result in 400%, 185.7%, and 100% of fuel weight as system weight respectively
+                    
+                    % Subtracting the two gives:
+                    % GI = 0.2: penalty = 395.8%
+                    % GI = 0.35: penalty = 181.5%
+                    % GI = 0.5: penalty = 95.8%
+                    
+                    % This value is the percentage of fuel weight that must
+                    % be added in order to account for the difference
+                    % between the Jet-A fuel system accounted for by Raymer
+                    % and the cyrogenic system required to use LH2 for fuel
+                    
+                    % Note the 1.815 in front of w_fuel -> change this
+                    % depending on the GI you want to use
+                    sizing.w0_calc(sizing.count) = 1.815*sizing.w_fuel(sizing.count) + sizing.w_crew_payload + sizing.w_empty(sizing.count);
                     sizing.diff = abs((sizing.w0_guess(sizing.count) - sizing.w0_calc(sizing.count)) / sizing.w0_guess(sizing.count));
                     sizing.count = sizing.count + 1;
-            
                 end
             
                 w0(jj, kk, ii, mm) = sizing.w0_calc(end); % intial weight, lbs
