@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import differential_evolution
-from sizing import aa_260_engine_model, aa_260_sizing
+# from sizing import aa_260_engine_model, aa_260_sizing
+from sizingh import aa_260_engine_model, aa_260_sizing # For Hydrogen aircraft
 from constraints import (
     stall_constraint,
     landing_constraint,
@@ -15,8 +16,8 @@ from constraints import (
 
 # Design variable bounds: [Mach, Altitude (m), Wing Loading (lb/ft²), Passengers]
 bounds = [
-    (0.5, 0.9),        # Mach
-    (7000, 15000),     # Altitude
+    (0.2, 0.9),        # Mach
+    (1000, 15000),     # Altitude
     (10, 300),         # Wing Loading
     (100, 400)         # Passengers
 ]
@@ -43,27 +44,27 @@ def objective(x):
         )
         fuel = fuel_pp[0, 0, 0, 0]
         w0_val = w0[0, 0, 0, 0]
-        fuel_weight_kg = fuel * 0.4536  # lb to kg
+        fuel_weight_kg = w_fuel[0, 0, 0, 0] * 0.4536  # lb to kg
 
     except Exception as e:
         print(f"[Sizing Failure] Mach={Mach:.3f}, Alt={Alt:.1f}, W/S={W_S:.1f}, Pax={pax} → {e}")
         return 1e9
 
     penalty = 0
-    rho = 10^1000
+    rho = 1e10
 
     # --- Stall Constraint ---
     W_S_stall = stall_constraint()
     if W_S > W_S_stall:
         delta = W_S - W_S_stall
-        penalty += (rho * delta)**2
+        penalty += rho * delta**2
         print(f"[Violation] Stall: W/S={W_S:.1f} > {W_S_stall:.1f}")
 
     # --- Landing Constraint ---
     W_S_land = landing_constraint()
     if W_S > W_S_land:
         delta = W_S - W_S_land
-        penalty += (rho * delta)**2
+        penalty += rho * delta**2
         print(f"[Violation] Landing: W/S={W_S:.1f} > {W_S_land:.1f}")
 
     # --- Cruise Constraint ---
@@ -71,7 +72,7 @@ def objective(x):
     T_W_actual = turbofan['T'][0, 0] / w0_val
     if T_W_actual < T_W_cruise:
         delta = T_W_cruise - T_W_actual
-        penalty += (rho * delta)**2
+        penalty += rho * delta**2
         print(f"[Violation] Cruise: T/W={T_W_actual:.3f} < {T_W_cruise:.3f}")
 
     # --- Climb Constraint ---
@@ -81,14 +82,14 @@ def objective(x):
     T_W_max = 54000 / w0_val  # estimated max thrust-to-weight ratio
     if T_W_max < T_W_min_climb:
         delta = T_W_min_climb - T_W_max
-        penalty += (rho * delta)**2
+        penalty += rho * delta**2
         print(f"[Violation] Climb: T/W_max={T_W_max:.3f} < {T_W_min_climb:.3f}")
 
     # --- Takeoff Constraint ---
     T_W_takeoff_req = takeoff_constraint(np.array([W_S]))[0]
     if T_W_max < T_W_takeoff_req:
         delta = T_W_takeoff_req - T_W_max
-        penalty += (rho * delta)**2
+        penalty += rho * delta**2
         print(f"[Violation] Takeoff: T/W_max={T_W_max:.3f} < {T_W_takeoff_req:.3f}")
 
     # --- Wingspan Constraint ---
@@ -99,7 +100,7 @@ def objective(x):
     max_wingspan_m = 36.0
     if b_m > max_wingspan_m:
         delta = b_m - max_wingspan_m
-        penalty += (rho * delta)**2
+        penalty += rho * delta**2
         print(f"[Violation] Wingspan: b = {b_m:.2f} m > {max_wingspan_m:.2f} m")
 
     # --- Fuselage Length Constraint ---
@@ -108,17 +109,16 @@ def objective(x):
     L_galley = 5       # m
     L_cabin = pax * seat_pitch / seats_abreast + L_galley
 
-#    R_tank = 2.0       # m
-#    rho_LH2 = 71       # kg/m³
-#    eta_V = 0.927
-#    eta_f = 0.85
-#    V_tank = fuel_weight_kg / (rho_LH2 * eta_V * eta_f)
-#    L_tank = V_tank / (np.pi * R_tank**2)
-    L_tank = 0       # m
+    R_tank = 2.0       # m
+    rho_LH2 = 70.85       # kg/m³
+    eta_V = 0.927
+    eta_f = 0.85
+    V_tank = fuel_weight_kg / (rho_LH2 * eta_V * eta_f)
+    L_tank = V_tank / (np.pi * R_tank**2)
 
     L_total = L_cabin + L_tank + 4 + 4  # add 4m nose and 4m tail
     if L_total > 44.5:
-        penalty += (rho * (L_total - 44.5))**2
+        penalty += rho * (L_total - 44.5)**2
         print(f"[Violation] Fuselage Length: {L_total:.2f} m > 44.5 m")
 
     if penalty > 0:
@@ -137,7 +137,7 @@ if __name__ == "__main__":
         objective,
         bounds,
         strategy='best1bin',
-        maxiter=5000,
+        maxiter=100,
         callback=callback,
         polish=True
     )
@@ -191,8 +191,7 @@ if __name__ == "__main__":
     eta_f = 0.85
     fuel_kg = fuel_total * 0.4536  # Convert lb to kg
     V_tank = fuel_kg / (rho_LH2 * eta_V * eta_f)
-    # L_tank = V_tank / (np.pi * R_tank**2)
-    L_tank = 0
+    L_tank = V_tank / (np.pi * R_tank**2)
 
     L_total = L_cabin + L_tank + 4 + 4  # add nose + tail
 
