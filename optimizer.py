@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import differential_evolution
-# from sizing import aa_260_engine_model, aa_260_sizing
-from sizingh import aa_260_engine_model, aa_260_sizing # For Hydrogen aircraft
+from sizingh import aa_260_engine_model, aa_260_sizing
+# from sizing import aa_260_engine_model, aa_260_sizing # For Hydrogen aircraft
 from constraints import (
     stall_constraint,
     landing_constraint,
@@ -16,8 +16,8 @@ from constraints import (
 
 # Design variable bounds: [Mach, Altitude (m), Wing Loading (lb/ft²), Passengers]
 bounds = [
-    (0.2, 0.9),        # Mach
-    (1000, 15000),     # Altitude
+    (0.4, 0.9),        # Mach
+    (5000, 15000),     # Altitude
     (10, 300),         # Wing Loading
     (100, 400)         # Passengers
 ]
@@ -48,7 +48,7 @@ def objective(x):
 
     except Exception as e:
         print(f"[Sizing Failure] Mach={Mach:.3f}, Alt={Alt:.1f}, W/S={W_S:.1f}, Pax={pax} → {e}")
-        return 1e9
+        return 1e10
 
     penalty = 0
     rho = 1e10
@@ -137,7 +137,7 @@ if __name__ == "__main__":
         objective,
         bounds,
         strategy='best1bin',
-        maxiter=100,
+        maxiter=1000,
         callback=callback,
         polish=True
     )
@@ -152,7 +152,7 @@ if __name__ == "__main__":
         turbofan, atmosphere,
         np.array([Mach]), np.array([Alt]),
         np.array([W_S]), np.array([pax]),
-        range_nm=2000
+        range_nm=1800
     )
 
     w0_val = w0[0, 0, 0, 0]
@@ -186,7 +186,7 @@ if __name__ == "__main__":
     L_cabin = pax * seat_pitch / seats_abreast + L_galley
 
     R_tank = 2.0       # m
-    rho_LH2 = 71       # kg/m³
+    rho_LH2 = 70.85       # kg/m³
     eta_V = 0.927
     eta_f = 0.85
     fuel_kg = fuel_total * 0.4536  # Convert lb to kg

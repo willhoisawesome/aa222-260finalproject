@@ -39,10 +39,10 @@ def aa_260_sizing(turbofan, atmosphere, M_cruise_range, alt_range, W_S_range, pa
                 wf_frac = np.exp(-range_ft * TSFC / 3600 / (V * L_D))
 
                 w_frac_total = 0.98 * (0.991 - 0.007 * M_cruise_range[j] - 0.01 * M_cruise_range[j]**2) * wf_frac * 0.992 * 0.995
-                wf_w0 = 1.06 * (1 - w_frac_total)
+                wf_w0 = 1.08 * (1 - w_frac_total)
 
                 for m in range(n_pax):
-                    w_payload = 195 * passenger_count_range[m]
+                    w_payload = 220 * passenger_count_range[m]
 
                     diff = 1.0
                     count = 0
@@ -78,7 +78,7 @@ def aa_260_engine_model(alt_array, mach_array):
     TSFC0 = 0.40               # lb/hr/lbf
     n = 0.8                    # TSFC exponent
     ne = 2                     # number of engines
-    T0 = 20305                 # max sea-level thrust, lbf
+    T0 = 26345                 # max sea-level thrust, lbf
     N1 = 0.8                   # throttle setting (percent)
     m = 0.7                    # density exponent
     a1 = -8.5e-4               # thrust curve coefficients

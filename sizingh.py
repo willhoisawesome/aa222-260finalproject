@@ -13,7 +13,7 @@ def aa_260_sizing(turbofan, atmosphere, M_cruise_range, alt_range, W_S_range, pa
     range_ft = range_nm * 6076
 
     # [H2] Gravimetric Index — tune this based on assumed fuel system design
-    GI = 0.35 # CHANGE THIS VALUE TO TUNE HYDROGEN SYSTEM WEIGHT
+    GI = 0.5 # CHANGE THIS VALUE TO TUNE HYDROGEN SYSTEM WEIGHT
     penalty = ((1 - GI) / GI) - 0.42  # Additional fuel system weight as a multiple of fuel weight
 
     # Array dimensions
@@ -49,10 +49,10 @@ def aa_260_sizing(turbofan, atmosphere, M_cruise_range, alt_range, W_S_range, pa
                 # Mission fuel fraction (Eqn 6.17-like + corrections)
                 wf_frac = np.exp(-range_ft * TSFC / 3600 / (V * L_D))
                 w_frac_total = 0.98 * (0.991 - 0.007 * M_cruise_range[j] - 0.01 * M_cruise_range[j]**2) * wf_frac * 0.992 * 0.995
-                wf_w0 = 1.06 * (1 - w_frac_total)            # includes reserves
+                wf_w0 = 1.08 * (1 - w_frac_total)            # includes reserves
 
                 for m in range(n_pax):
-                    w_payload = 195 * passenger_count_range[m]  # 195 lb per passenger
+                    w_payload = 220 * passenger_count_range[m]  # 195 lb per passenger
                     diff = 1.0
                     count = 0
                     w0_guess = 175000.0

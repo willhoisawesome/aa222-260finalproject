@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 CD0 = 0.022
 AR = 10.5
 e = 0.82
-TOP = 175
+TOP = 200
 sigma_takeoff = 1.0
 CL_to = 2.5
 V_stall = 150 * 1.68781  # knots to ft/s

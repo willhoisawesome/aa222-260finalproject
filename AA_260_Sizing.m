@@ -25,7 +25,7 @@ given.C5 = 0.20;
 
 given.lambda = 27; % A320neo leading edge sweep angle
 given.AR = 10.5; % A320neo aspect ratio
-given.range = 1500; % nautical miles
+given.range = 3400; % nautical miles
 
 % given.M_cruise = 0.6:0.1:0.9; % A320neo cruise mach range
 % given.alt = 9000:1000:12000; % cruise altitude, m
@@ -33,10 +33,10 @@ given.range = 1500; % nautical miles
 % given.passenger_count = 100:10:200; % passenger count range
 
 % Uncomment to check against actual A320neo (ChatGPT gives 1.1e5 lbs)
-given.M_cruise = 0.8;
-given.alt = 11000; % m
+given.M_cruise = 0.82;
+given.alt = 11900; % m
 given.W_S = 165; % lb/ft^2
-given.passenger_count = 165;
+given.passenger_count = 194;
 
 n1 = length(given.M_cruise); % size of Mach array
 n2 = length(given.alt); % size of altitude array
@@ -94,7 +94,7 @@ for ii = 1:n3 % iterate over wing loadings
                 clear sizing
             
                 sizing.wf_w0 = 1.06 * (1- weight_frac.final(jj, kk, ii)); % fuel fraction (6% accounts for reserve fuel and stuff)
-                sizing.w_crew_payload = 195 * given.passenger_count(mm); % lbs (195 is the average weight of an adult passenger)
+                sizing.w_crew_payload = 220 * given.passenger_count(mm); % lbs (195 is the average weight of an adult passenger)
                 sizing.diff = 1;
                 sizing.count = 1;
             
@@ -129,7 +129,7 @@ for ii = 1:n3 % iterate over wing loadings
                     
                     % Note the 1.815 in front of w_fuel -> change this
                     % depending on the GI you want to use
-                    sizing.w0_calc(sizing.count) = 1.815*sizing.w_fuel(sizing.count) + sizing.w_crew_payload + sizing.w_empty(sizing.count);
+                    sizing.w0_calc(sizing.count) = sizing.w_fuel(sizing.count) + sizing.w_crew_payload + sizing.w_empty(sizing.count);
                     sizing.diff = abs((sizing.w0_guess(sizing.count) - sizing.w0_calc(sizing.count)) / sizing.w0_guess(sizing.count));
                     sizing.count = sizing.count + 1;
                 end

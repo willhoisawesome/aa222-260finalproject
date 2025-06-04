@@ -54,7 +54,7 @@ function [output, output2] = AA_260_Engine_Model(alt, Mach)
     end
     
     output.T = T; % assign to output structure
-    output.TSFC = TSFC * given.LHV_JetA / given.LHV_H2; % assign to output stucture (converted to H2 for a given thrust)
+    output.TSFC = TSFC; % * given.LHV_JetA / given.LHV_H2; % assign to output stucture (converted to H2 for a given thrust)
     output.mdot_f = TSFC .* T; % fuel consumption, lbm/hr
     output.v = v; % assign to output structure
     output2 = atmosphere; % assign to output stucture

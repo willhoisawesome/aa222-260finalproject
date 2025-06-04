@@ -16,7 +16,7 @@ M_cruise = 0.82         # Cruise Mach number
 alt = 11900             # Cruise altitude [m]
 W_S = 165               # Wing loading [lb/ft²]
 pax = 194               # Passenger count
-range_nm = 3500         # Nautical mile range
+range_nm = 3400         # Nautical mile range
 
 # --- Engine and Atmosphere Evaluation ---
 turbofan, atmosphere = aa_260_engine_model(np.array([alt]), np.array([M_cruise]))
@@ -46,8 +46,8 @@ T_W_max = 54000 / w0_val  # Max thrust-to-weight ratio at takeoff
 
 # --- Display Sizing Results ---
 print("===== A320neo Sizing Results =====")
-print(f"Initial Weight [kg]: {w0_val_kg:.2f}")
-print(f"Fuel Weight [kg]   : {fuel_total_kg:.2f}")
+print(f"Initial Weight [lbs]: {w0_val:.2f}")
+print(f"Fuel Weight [lbs]   : {fuel_total:.2f}")
 print(f"Fuel/Passenger [lb]: {fuel_per_pax:.2f}")
 print(f"Thrust-to-Weight Cruise   : {T_W_actual:.3f}")
 print(f"Thrust-to-Weight Takeoff   : {T_W_max:.3f}")
